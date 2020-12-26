@@ -1,6 +1,6 @@
 # csapp
 
-This repository holds my lab assignment for [Computer Systems: A Programmer's Perspective, 3/E][1]
+This repository holds my lab assignments for [Computer Systems: A Programmer's Perspective, 3/E][1]
 
 [labs][2]
 
