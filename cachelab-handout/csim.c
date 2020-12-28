@@ -3,17 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HELP 0x1
-#define VERBOSE 0x2
-#define TEST
+#define HELP    (1 << 0)
+#define VERBOSE (1 << 1)
 
-int mask = 0;
-int S = 0, E = 0, b = 0;
-FILE *fd = NULL;
+static int mask = 0;
+static int s = 0, E = 0, b = 0;
+static FILE *fd = NULL;
 
 
 typedef struct Line {
-    int tag;
+    unsigned long long *tag;
     int valid;
     struct Line *prev, *next;
 } Line;
@@ -28,6 +27,7 @@ typedef struct {
 Cache new_cache() {
     Cache cache;
 
+    int S = 1 << s;
     Set *sets = malloc(S * sizeof(Set));
     for (int i = 0; i < S; i++) {
         Line *lines = calloc(E, sizeof(Line));
@@ -55,7 +55,7 @@ void init(int argc, char *argv[]) {
             mask |= VERBOSE;
         } else if (strcmp(argv[i], "-s") == 0) {
             if (++i < argc) {
-                S = 1 << atoi(argv[i]);
+                s = atoi(argv[i]);
             }
         } else if (strcmp(argv[i], "-E") == 0) {
             if (++i < argc) {
@@ -88,17 +88,22 @@ int main(int argc, char *argv[]) {
 #ifdef TEST
 int main(int argc, char *argv[]) {
     init(argc, argv);
-    printf("S = %d, E = %d, b = %d, mask = %x\n", S, E, b, mask);
+    printf("s = %d, E = %d, b = %d, mask = %x\n", s, E, b, mask);
     if (fd != NULL) {
         char *buf = NULL;
         size_t n = 0;
-        while (getline(&buf, &n, fd) != -1) {
+        ssize_t pos;
+        while ((pos = getline(&buf, &n, fd)) > 1) {
+            if (buf[pos - 1] == '\n') {
+                buf[pos - 1] = 0;
+            }
+
             printf("%s", buf);
         }
     } else {
         printf("cannot open file\n");
         exit(1);
     }
-    return 0;
+
 }
 #endif
