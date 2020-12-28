@@ -9,6 +9,7 @@
 static int mask = 0;
 static int s = 0, E = 0, b = 0;
 static FILE *fd = NULL;
+static char oper = 0;
 
 
 typedef struct Line {
@@ -76,6 +77,20 @@ void init(int argc, char *argv[]) {
     }
 }
 
+
+unsigned long long parse(char *line) {
+    if (line == NULL || line[0] != ' ') {
+        oper = 0;
+        return 0;
+    }
+
+    unsigned long long addr;
+    sscanf(line, " %c %llx", &oper, &addr);
+
+    return addr;
+}
+
+
 #ifndef TEST
 int main(int argc, char *argv[]) {
     init(argc, argv);
@@ -99,6 +114,7 @@ int main(int argc, char *argv[]) {
             }
 
             printf("%s", buf);
+            printf("oper = %c(%d), addr = %llx\n", oper, oper, parse(buf));
         }
     } else {
         printf("cannot open file\n");
