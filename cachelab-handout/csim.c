@@ -11,7 +11,7 @@ typedef struct Line {
     struct Line *prev, *next;
 } Line;
 typedef struct {
-    Line *head;
+    Line *nil;
     Line *tail;
 } Set;
 typedef struct {
@@ -64,16 +64,16 @@ int alloc_cache() {
 
     Set *sets = malloc(S * sizeof(Set));
     for (int i = 0; i < S; i++) {
-        Line *lines = calloc(E, sizeof(Line));
-        for (int j = 0; j < E; j++) {
+        Line *lines = malloc((E + 1) * sizeof(Line));
+        for (int j = 0; j <= E; j++) {
             lines[j].prev = lines + j - 1;
             lines[j].next = lines + j + 1;
         }
-        lines[0].prev = NULL;
-        lines[E- 1].next = NULL;
+        lines[0].prev = lines + E;
+        lines[E].next = lines;
 
-        sets[i].head = lines;
-        sets[i].tail = lines;
+        sets[i].nil = lines;
+        sets[i].tail = lines + 1;
     }
 
     cache.sets = sets;
