@@ -6,12 +6,6 @@
 #define HELP    (1 << 0)
 #define VERBOSE (1 << 1)
 
-static int mask = 0;
-static int s = 0, E = 0, b = 0;
-static FILE *fd = NULL;
-static char oper = 0;
-
-
 typedef struct Line {
     unsigned long long *tag;
     int valid;
@@ -22,13 +16,53 @@ typedef struct {
     Line *tail;
 } Set;
 typedef struct {
+    int s, E, b;
     Set *sets;
 } Cache;
 
-Cache new_cache() {
-    Cache cache;
+static int mask = 0;
+static Cache cache = { 0, 0, 0, NULL };
+static FILE *fd = NULL;
+static char oper = 0;
 
-    int S = 1 << s;
+
+int set_parameter(int argc, char *argv[]) {
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-h") == 0) {
+            mask |= HELP;
+            break;
+        } else if (strcmp(argv[i], "-v") == 0) {
+            mask |= VERBOSE;
+        } else if (strcmp(argv[i], "-s") == 0) {
+            if (++i < argc) {
+                cache.s = atoi(argv[i]);
+            }
+        } else if (strcmp(argv[i], "-E") == 0) {
+            if (++i < argc) {
+                cache.E = atoi(argv[i]);
+            }
+        } else if (strcmp(argv[i], "-b") == 0) {
+            if (++i < argc) {
+                cache.b = atoi(argv[i]);
+            }
+        } else if (strcmp(argv[i], "-t") == 0) {
+            if (++i < argc) {
+                fd = fopen(argv[i], "r");
+            }
+        } else {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int alloc_cache() {
+    int S = 1 << cache.s;
+    int E = cache.E;
+    if (E == 0) {
+        return -1;
+    }
+
     Set *sets = malloc(S * sizeof(Set));
     for (int i = 0; i < S; i++) {
         Line *lines = calloc(E, sizeof(Line));
@@ -44,37 +78,18 @@ Cache new_cache() {
     }
 
     cache.sets = sets;
-    return cache;
+    return 0;
 }
 
-void init(int argc, char *argv[]) {
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-h") == 0) {
-            mask |= HELP;
-            break;
-        } else if (strcmp(argv[i], "-v") == 0) {
-            mask |= VERBOSE;
-        } else if (strcmp(argv[i], "-s") == 0) {
-            if (++i < argc) {
-                s = atoi(argv[i]);
-            }
-        } else if (strcmp(argv[i], "-E") == 0) {
-            if (++i < argc) {
-                E = atoi(argv[i]);
-            }
-        } else if (strcmp(argv[i], "-b") == 0) {
-            if (++i < argc) {
-                b = atoi(argv[i]);
-            }
-        } else if (strcmp(argv[i], "-t") == 0) {
-            if (++i < argc) {
-                fd = fopen(argv[i], "r");
-            }
-        } else {
-            mask |= HELP;
-            break;
-        }
+int init(int argc, char *argv[]) {
+    if (set_parameter(argc, argv) == -1) {
+        return -1;
     }
+    if ((mask & HELP) != 0) {
+        return 0;
+    }
+
+    return alloc_cache();
 }
 
 
@@ -102,8 +117,15 @@ int main(int argc, char *argv[]) {
 
 #ifdef TEST
 int main(int argc, char *argv[]) {
-    init(argc, argv);
-    printf("s = %d, E = %d, b = %d, mask = %x\n", s, E, b, mask);
+    if (init(argc, argv) == -1) {
+        mask |= HELP;
+    }
+    if ((mask & HELP) != 0) {
+        //print_help();
+        return 0;
+    }
+
+    printf("s = %d, E = %d, b = %d, mask = %x\n", cache.s, cache.E, cache.b, mask);
     if (fd != NULL) {
         char *buf = NULL;
         size_t n = 0;
