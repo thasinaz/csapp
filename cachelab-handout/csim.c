@@ -7,8 +7,7 @@
 #define VERBOSE (1 << 1)
 
 typedef struct Line {
-    unsigned long long *tag;
-    int valid;
+    unsigned long long tag;
     struct Line *prev, *next;
 } Line;
 typedef struct {
