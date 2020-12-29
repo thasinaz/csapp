@@ -128,14 +128,15 @@ int main(int argc, char *argv[]) {
     if (fd != NULL) {
         char *buf = NULL;
         size_t n = 0;
-        ssize_t pos;
-        while ((pos = getline(&buf, &n, fd)) > 1) {
-            if (buf[pos - 1] == '\n') {
-                buf[pos - 1] = 0;
+        ssize_t len;
+        while ((len = getline(&buf, &n, fd)) > 1) {
+            if (buf[len - 1] == '\n') {
+                buf[len - 1] = 0;
             }
 
             printf("%s", buf);
-            printf("oper = %c(%d), addr = %llx\n", oper, oper, parse(buf));
+            unsigned long long addr;
+            printf("oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
         }
     } else {
         printf("cannot open file\n");
