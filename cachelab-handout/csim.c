@@ -25,6 +25,7 @@ static int mask = 0;
 static Cache cache = { 0, 0, 0, NULL };
 static FILE *fd = NULL;
 static char oper = 0;
+static int hits = 0, misses = 0, evictions = 0;
 
 
 int set_parameter(int argc, char *argv[]) {
@@ -107,6 +108,28 @@ unsigned long long parse(char *line) {
 }
 
 
+void print_verbose(char *s) {
+    if ((mask & VERBOSE) != 0) {
+        printf("%s", s);
+    }
+}
+
+void increase_hits() {
+    hits++;
+    print_verbose(" hit");
+}
+
+void increase_misses() {
+    misses++;
+    print_verbose(" miss");
+}
+
+void increase_evictions() {
+    evictions++;
+    print_verbose(" eviction");
+}
+
+
 #ifndef TEST
 int main(int argc, char *argv[]) {
     init(argc, argv);
@@ -144,6 +167,7 @@ int main(int argc, char *argv[]) {
         printf(" oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
     }
 
+    printSummary(hits, misses, evictions);
     return 0;
 }
 #endif
