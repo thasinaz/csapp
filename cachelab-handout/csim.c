@@ -130,6 +130,102 @@ void increase_evictions() {
 }
 
 
+int parse_addr(unsigned long long addr,
+               size_t *index, unsigned long long *tag) {
+    int s = cache.s;
+    int b = cache.b;
+    *index = (addr >> b) % (1 << s);
+    *tag = addr >> (s + b);
+    return 0;
+}
+
+Line *move_to_front(Set *set, Line *line) {
+    Line *head = set->nil->next;
+
+    if (head == line) {
+        return line;
+    }
+
+    line->prev->next = line->next;
+    line->next->prev = line->prev;
+    line->prev = set->nil;
+    line->next = head;
+    head->prev = line;
+    set->nil->next = line;
+    return line;
+}
+
+Line *find(size_t index, unsigned long long tag) {
+    Set *set = cache.sets + index;
+
+    Line *line_ptr = set->nil->next;
+    Line *tail = set->tail;
+    while (line_ptr != tail) {
+        if (line_ptr->tag == tag) {
+            increase_hits();
+            return move_to_front(set, line_ptr);
+        }
+        line_ptr = line_ptr->next;
+    }
+    increase_misses();
+    return NULL;
+}
+
+Line *fetch(size_t index, unsigned long long tag) {
+    Set *set = cache.sets + index;
+    Line *nil = set->nil;
+    Line *tail = set->tail;
+
+    if (tail == nil) {
+        tail->prev->tag = tag;
+        increase_evictions();
+        return move_to_front(set, tail->prev);
+    } else {
+        tail->tag = tag;
+        set->tail = tail->next;
+        return move_to_front(set, tail);
+    }
+}
+
+Line *get_cache_line(unsigned long long addr) {
+    size_t index;
+    unsigned long long tag;
+    parse_addr(addr, &index, &tag);
+    Line *line;
+
+    if ((line = find(index, tag)) == NULL) {
+        return fetch(index, tag);
+    }
+    return line;
+}
+
+void load(unsigned long long addr) {
+    get_cache_line(addr);
+}
+
+void store(unsigned long long addr) {
+    get_cache_line(addr);
+}
+
+int access(unsigned long long addr) {
+    switch (oper) {
+    case 'L':
+        load(addr);
+        break;
+    case 'M':
+        load(addr);
+    case 'S':
+        store(addr);
+        break;
+    default:
+        break;
+    }
+
+    print_verbose("\n");
+    return 0;
+}
+
+
 #ifndef TEST
 int main(int argc, char *argv[]) {
     init(argc, argv);
@@ -165,6 +261,8 @@ int main(int argc, char *argv[]) {
         printf("%s", buf);
         unsigned long long addr;
         printf(" oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
+        print_verbose(buf);
+        access(addr);
     }
 
     printSummary(hits, misses, evictions);
