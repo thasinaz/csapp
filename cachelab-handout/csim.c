@@ -228,9 +228,31 @@ int access(unsigned long long addr) {
 
 #ifndef TEST
 int main(int argc, char *argv[]) {
-    init(argc, argv);
+    if (init(argc, argv) == -1) {
+        mask |= HELP;
+    }
+    if ((mask & HELP) != 0) {
+        //print_help();
+        return 0;
+    }
+    if (fd == NULL) {
+        fprintf(stderr, "cannot open file\n");
+        exit(1);
+    }
 
-    printSummary(0, 0, 0);
+    char buf[BUF_LEN];
+    while (fgets(buf, BUF_LEN, fd) != NULL) {
+        char *ch;
+        if ((ch = strchr(buf, '\n')) != NULL) {
+            *ch = 0;
+        }
+        print_verbose(buf);
+
+        unsigned long long addr = parse(buf);
+        access(addr);
+    }
+
+    printSummary(hits, misses, evictions);
     return 0;
 }
 #endif
