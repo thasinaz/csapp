@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BUF_LEN 64
+
 #define HELP    (1 << 0)
 #define VERBOSE (1 << 1)
 
@@ -123,25 +125,25 @@ int main(int argc, char *argv[]) {
         //print_help();
         return 0;
     }
-
-    printf("s = %d, E = %d, b = %d, mask = %x\n", cache.s, cache.E, cache.b, mask);
-    if (fd != NULL) {
-        char *buf = NULL;
-        size_t n = 0;
-        ssize_t len;
-        while ((len = getline(&buf, &n, fd)) > 1) {
-            if (buf[len - 1] == '\n') {
-                buf[len - 1] = 0;
-            }
-
-            printf("%s", buf);
-            unsigned long long addr;
-            printf("oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
-        }
-    } else {
+    if (fd == NULL) {
         printf("cannot open file\n");
         exit(1);
     }
 
+    printf("s = %d, E = %d, b = %d, mask = %x\n", cache.s, cache.E, cache.b, mask);
+
+    char buf[BUF_LEN];
+    while (fgets(buf, BUF_LEN, fd) != NULL) {
+        char *ch;
+        if ((ch = strchr(buf, '\n')) != NULL) {
+            *ch = 0;
+        }
+
+        printf("%s", buf);
+        unsigned long long addr;
+        printf(" oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
+    }
+
+    return 0;
 }
 #endif
