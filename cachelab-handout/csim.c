@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
+#include <unistd.h>
 
 #define BUF_LEN 64
 
@@ -28,33 +30,34 @@ static char oper = 0;
 static int hits = 0, misses = 0, evictions = 0;
 
 
-int set_parameter(int argc, char *argv[]) {
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-h") == 0) {
+int parse_args(int argc, char *argv[]) {
+    int opt;
+
+    while ((opt = getopt(argc, argv, "hvs:E:b:t:")) != -1) {
+        switch (opt) {
+        case 'h':
             mask |= HELP;
-            break;
-        } else if (strcmp(argv[i], "-v") == 0) {
+            return 0;
+        case 'v':
             mask |= VERBOSE;
-        } else if (strcmp(argv[i], "-s") == 0) {
-            if (++i < argc) {
-                cache.s = atoi(argv[i]);
-            }
-        } else if (strcmp(argv[i], "-E") == 0) {
-            if (++i < argc) {
-                cache.E = atoi(argv[i]);
-            }
-        } else if (strcmp(argv[i], "-b") == 0) {
-            if (++i < argc) {
-                cache.b = atoi(argv[i]);
-            }
-        } else if (strcmp(argv[i], "-t") == 0) {
-            if (++i < argc) {
-                fd = fopen(argv[i], "r");
-            }
-        } else {
+            break;
+        case 's':
+            cache.s = atoi(optarg);
+            break;
+        case 'E':
+            cache.E = atoi(optarg);
+            break;
+        case 'b':
+            cache.b = atoi(optarg);
+            break;
+        case 't':
+            fd = fopen(optarg, "r");
+            break;
+        default:
             return -1;
         }
     }
+
     return 0;
 }
 
@@ -84,7 +87,7 @@ int alloc_cache() {
 }
 
 int init(int argc, char *argv[]) {
-    if (set_parameter(argc, argv) == -1) {
+    if (parse_args(argc, argv) == -1) {
         return -1;
     }
     if ((mask & HELP) != 0) {
