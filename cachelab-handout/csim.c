@@ -95,19 +95,6 @@ int init(int argc, char *argv[]) {
 }
 
 
-unsigned long long parse(char *line) {
-    if (line == NULL || line[0] != ' ') {
-        oper = 0;
-        return 0;
-    }
-
-    unsigned long long addr;
-    sscanf(line, " %c %llx", &oper, &addr);
-
-    return addr;
-}
-
-
 void print_help(char *path) {
     printf("Usage: %s [-hv] -s <s> -E <E> -b <b> -t <tracefile>", path);
 }
@@ -131,6 +118,20 @@ void increase_misses() {
 void increase_evictions() {
     evictions++;
     print_verbose("eviction");
+}
+
+
+unsigned long long parse(char *line) {
+    if (line == NULL || line[0] != ' ') {
+        oper = 0;
+        return 0;
+    }
+
+    unsigned long long addr;
+    sscanf(line, " %c %llx", &oper, &addr);
+    print_verbose(line + 1);
+
+    return addr;
 }
 
 
@@ -212,7 +213,7 @@ void store(unsigned long long addr) {
     get_cache_line(addr);
 }
 
-int access(unsigned long long addr) {
+int access_cache(unsigned long long addr) {
     switch (oper) {
     case 'L':
         load(addr);
@@ -252,11 +253,10 @@ int main(int argc, char *argv[]) {
         if ((ch = strchr(buf, '\n')) != NULL) {
             *ch = 0;
         }
-        print_verbose(buf);
 
         unsigned long long addr = parse(buf);
         print_verbose(" ");
-        access(addr);
+        access_cache(addr);
         print_verbose("\n");
     }
 
@@ -289,12 +289,11 @@ int main(int argc, char *argv[]) {
             *ch = 0;
         }
 
-        printf("%s", buf);
+        printf("%s\n", buf);
         unsigned long long addr;
-        printf(" oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
-        print_verbose(buf);
+        printf("\noper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
         print_verbose(" ");
-        access(addr);
+        access_cache(addr);
         print_verbose("\n");
     }
 
