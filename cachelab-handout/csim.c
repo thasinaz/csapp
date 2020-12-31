@@ -108,6 +108,10 @@ unsigned long long parse(char *line) {
 }
 
 
+void print_help(char *path) {
+    printf("Usage: %s [-hv] -s <s> -E <E> -b <b> -t <tracefile>", path);
+}
+
 void print_verbose(char *s) {
     if ((mask & VERBOSE) != 0) {
         printf("%s", s);
@@ -233,7 +237,8 @@ int main(int argc, char *argv[]) {
         mask |= HELP;
     }
     if ((mask & HELP) != 0) {
-        //print_help();
+        print_help(argv[0]);
+        putchar('\n');
         return 0;
     }
     if (fd == NULL) {
@@ -266,7 +271,8 @@ int main(int argc, char *argv[]) {
         mask |= HELP;
     }
     if ((mask & HELP) != 0) {
-        //print_help();
+        print_help(argv[0]);
+        putchar('\n');
         return 0;
     }
     if (fd == NULL) {
