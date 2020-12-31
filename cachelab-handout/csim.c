@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     if (fd == NULL) {
-        printf("cannot open file\n");
+        fprintf(stderr, "cannot open file\n");
         exit(1);
     }
 
