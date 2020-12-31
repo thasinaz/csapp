@@ -116,17 +116,17 @@ void print_verbose(char *s) {
 
 void increase_hits() {
     hits++;
-    print_verbose(" hit");
+    print_verbose("hit");
 }
 
 void increase_misses() {
     misses++;
-    print_verbose(" miss");
+    print_verbose("miss");
 }
 
 void increase_evictions() {
     evictions++;
-    print_verbose(" eviction");
+    print_verbose("eviction");
 }
 
 
@@ -178,6 +178,7 @@ Line *fetch(size_t index, unsigned long long tag) {
 
     if (tail == nil) {
         tail->prev->tag = tag;
+        print_verbose(" ");
         increase_evictions();
         return move_to_front(set, tail->prev);
     } else {
@@ -214,6 +215,7 @@ int access(unsigned long long addr) {
         break;
     case 'M':
         load(addr);
+        print_verbose(" ");
     case 'S':
         store(addr);
         break;
@@ -221,7 +223,6 @@ int access(unsigned long long addr) {
         break;
     }
 
-    print_verbose("\n");
     return 0;
 }
 
@@ -249,7 +250,9 @@ int main(int argc, char *argv[]) {
         print_verbose(buf);
 
         unsigned long long addr = parse(buf);
+        print_verbose(" ");
         access(addr);
+        print_verbose("\n");
     }
 
     printSummary(hits, misses, evictions);
@@ -284,7 +287,9 @@ int main(int argc, char *argv[]) {
         unsigned long long addr;
         printf(" oper = %c(%d), addr = %llx\n", oper, oper, (addr = parse(buf)));
         print_verbose(buf);
+        print_verbose(" ");
         access(addr);
+        print_verbose("\n");
     }
 
     printSummary(hits, misses, evictions);
