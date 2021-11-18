@@ -1,6 +1,0 @@
-CC = gcc
-CFLAGS = -g -Wall -Werror -std=c99 -m64
-
-test:
-	$(CC) $(CFLAGS) -DTEST -o csim csim.c cachelab.c
-	./csim -s 1 -E 2 -b 3 -v -t test.in
